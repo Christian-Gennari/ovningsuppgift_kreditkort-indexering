@@ -34,16 +34,21 @@ switch (choice)
 
 void namn()
 {
+    Random random = new Random();
+
     Db db = new Db();
     Console.WriteLine("Hur många namn vill du generera? ");
-    string inputStr = Console.ReadLine();
+    string? inputStr = Console.ReadLine();
     int input;
     if (int.TryParse(inputStr, out input))
     {
         for (int i = 0; i < input; i++)
         {
-            Console.WriteLine($"Generating name {i + 1} ");
-            Console.ReadLine();
+            string slumpFornamn = db.firstName[random.Next(db.firstName.Count)];
+            string slumpEfternamn = db.lastName[random.Next(db.lastName.Count)];
+
+            Console.WriteLine($"Generating name {i + 1}. {slumpFornamn} {slumpEfternamn}");
+
         }
     }
     else
