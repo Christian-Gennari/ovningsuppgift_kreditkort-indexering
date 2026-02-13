@@ -32,6 +32,13 @@ switch (choice)
         Console.WriteLine("Invalid choice.");
         break;
         
+void MockData()
+{
+    Db db = new Db();
+
+    db.firstName.ForEach(name => Console.WriteLine($"First Name: {name}"));
+    db.lastName.ForEach(name => Console.WriteLine($"Last Name: {name}"));
+    Console.WriteLine("Mock data generated.");
 }
 return;
 
