@@ -1,9 +1,42 @@
 using System;
+using System.Data.Common;
+using Microsoft.Data.Sqlite;
 
 namespace ovningsuppgift_kreditkort_indexering;
 
 public class Db
 {
+    private SqliteConnection connection = new SqliteConnection("Data Source=database.sqlite");
+
+    void Initialize()
+    {
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText =
+            @"
+            CREATE TABLE IF NOT EXISTS Users (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT NOT NULL,
+                CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        ";
+        command.ExecuteNonQuery();
+    }
+
+    void InsertUser(string name)
+    {
+        connection.Open();
+
+        var command = connection.CreateCommand();
+        command.CommandText =
+            @"
+            INSERT INTO Users (Name) VALUES ($name);
+        ";
+        command.Parameters.AddWithValue("$name", name);
+        command.ExecuteNonQuery();
+    }
+
     public List<string> firstName = new List<string>
     {
         "Dalston",
