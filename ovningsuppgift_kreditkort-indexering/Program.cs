@@ -47,6 +47,7 @@ void namn()
 
         // Ge databasen ansvaret att generera och spara namnen
         db.GenerateAndInsertUsers(input);
+        db.GenerateAndInsertCreditCards();
 
         stopwatch.Stop();
         Console.WriteLine(

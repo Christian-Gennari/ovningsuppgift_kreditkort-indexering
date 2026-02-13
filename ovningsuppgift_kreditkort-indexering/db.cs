@@ -15,56 +15,20 @@ public class Db
             @"
             CREATE TABLE IF NOT EXISTS Users (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                Name TEXT NOT NULL,
+                Name TEXT NOT NULL
             );
 
-            CREATE TABLE OF NOT EXISTS CreditCards(
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            UserId INTEGER NOT NULL,
-            CardNumber TEXT NOT NULL,
-            FOREIGN KEY (UserId) REFERENCES Users(Id)
+            CREATE TABLE IF NOT EXISTS CreditCards(
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                UserId INTEGER NOT NULL,
+                CardNumber TEXT NOT NULL,
+                FOREIGN KEY (UserId) REFERENCES Users(Id)
             ); ";
         command.ExecuteNonQuery();
     }
 
-    public void InsertUsersBatch(List<string> fullNames)
-    {
-        using var connection = new SqliteConnection(connectionString);
-        connection.Open();
-
-        // PRAGMAs
-        using (var pragmaCmd = connection.CreateCommand())
-        {
-            pragmaCmd.CommandText =
-                "PRAGMA synchronous = OFF; PRAGMA journal_mode = WAL; PRAGMA cache_size = 10000;";
-            pragmaCmd.ExecuteNonQuery();
-        }
-
-        using var transaction = connection.BeginTransaction();
-        using var command = connection.CreateCommand();
-
-        command.Transaction = transaction; // Länka kommandot till transaktionen
-        command.CommandText = "INSERT INTO Users (Name) VALUES ($name)";
-
-        var parameter = command.CreateParameter();
-        parameter.ParameterName = "$name";
-        command.Parameters.Add(parameter);
-
-        // LOOPEN för att exekvera alla inserts inom en enda transaktion
-        foreach (var name in fullNames)
-        {
-            parameter.Value = name;
-            command.ExecuteNonQuery();
-        }
-
-        // En enda commit
-        transaction.Commit();
-    }
-
     public void GenerateAndInsertUsers(int count)
     {
-        // Få alla namn i förväg, så att vi inte gör onödiga Random.Next-anrop i loopen
-        // Detta kanske bättrar?
         string[] randomFirstNames = Random.Shared.GetItems(firstName.ToArray(), count);
         string[] randomLastNames = Random.Shared.GetItems(lastName.ToArray(), count);
 
@@ -86,7 +50,6 @@ public class Db
         parameter.ParameterName = "$name";
         command.Parameters.Add(parameter);
 
-        // LOOPEN för att exekvera alla inserts inom en enda transaktion
         for (int i = 0; i < count; i++)
         {
             parameter.Value = $"{randomFirstNames[i]} {randomLastNames[i]}";
@@ -94,6 +57,77 @@ public class Db
         }
 
         transaction.Commit();
+    }
+
+    public void GenerateAndInsertCreditCards()
+    {
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
+
+        using (var pragmaCmd = connection.CreateCommand())
+        {
+            pragmaCmd.CommandText = "PRAGMA synchronous = OFF; PRAGMA journal_mode = WAL;";
+            pragmaCmd.ExecuteNonQuery();
+        }
+
+        List<long> userIds = [];
+        using (var selectCmd = connection.CreateCommand())
+        {
+            selectCmd.CommandText =
+                @"
+                SELECT u.Id
+                FROM Users AS u
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM CreditCards AS c
+                    WHERE c.UserId = u.Id
+                );";
+            using var reader = selectCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                userIds.Add(reader.GetInt64(0));
+            }
+        }
+
+        using var transaction = connection.BeginTransaction();
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            "INSERT INTO CreditCards (UserId, CardNumber) VALUES ($userId, $cardNumber)";
+
+        var userIdParam = command.CreateParameter();
+        userIdParam.ParameterName = "$userId";
+        command.Parameters.Add(userIdParam);
+
+        var cardNumberParam = command.CreateParameter();
+        cardNumberParam.ParameterName = "$cardNumber";
+        command.Parameters.Add(cardNumberParam);
+
+        foreach (var userId in userIds)
+        {
+            int cardsToCreate = CardDistributionGenerator();
+            for (int i = 0; i < cardsToCreate; i++)
+            {
+                userIdParam.Value = userId;
+                cardNumberParam.Value = Random
+                    .Shared.NextInt64(1000000000000000, 9999999999999999)
+                    .ToString();
+                command.ExecuteNonQuery();
+            }
+        }
+
+        transaction.Commit();
+    }
+
+    private static int CardDistributionGenerator()
+    {
+        int chance = Random.Shared.Next(0, 10);
+
+        if (chance < 7)
+            return 1;
+        if (chance < 9)
+            return 2;
+        return Random.Shared.Next(3, 11);
     }
 
     public List<string> firstName =
