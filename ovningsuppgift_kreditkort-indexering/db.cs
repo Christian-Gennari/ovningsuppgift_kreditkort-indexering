@@ -6,9 +6,9 @@ namespace ovningsuppgift_kreditkort_indexering;
 
 public class Db
 {
-    private SqliteConnection connection = new SqliteConnection("Data Source=database.sqlite");
+    private readonly SqliteConnection connection = new("Data Source=database.sqlite");
 
-    void Initialize()
+    public void Initialize()
     {
         connection.Open();
 
@@ -24,7 +24,7 @@ public class Db
         command.ExecuteNonQuery();
     }
 
-    void InsertUser(string name)
+    public void InsertUser(string name)
     {
         connection.Open();
 
@@ -37,8 +37,8 @@ public class Db
         command.ExecuteNonQuery();
     }
 
-    public List<string> firstName = new List<string>
-    {
+    public List<string> firstName =
+    [
         "Dalston",
         "Karylin",
         "Anet",
@@ -1039,9 +1039,9 @@ public class Db
         "Ceil",
         "Larina",
         "Emmy",
-    };
-    public List<string> lastName = new List<string>
-    {
+    ];
+    public List<string> lastName =
+    [
         "Machent",
         "Hutchins",
         "Davidovich",
@@ -2042,5 +2042,5 @@ public class Db
         "Fidal",
         "Mattholie",
         "Scogings",
-    };
+    ];
 }
