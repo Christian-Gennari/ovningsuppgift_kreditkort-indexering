@@ -1,4 +1,5 @@
-﻿using ovningsuppgift_kreditkort_indexering;
+﻿using System.Diagnostics;
+using ovningsuppgift_kreditkort_indexering;
 
 // Create and initialize the database
 Db db = new();
@@ -33,13 +34,19 @@ switch (choice)
         break;
 }
 
+
+
 void namn()
 {
     Random random = new Random();
 
     Console.WriteLine("Hur många namn vill du generera? ");
     string inputStr = Console.ReadLine() ?? "100000";
+
     int input;
+    
+     var stopwatch = Stopwatch.StartNew();
+
     if (int.TryParse(inputStr, out input))
     {
         for (int i = 0; i < input; i++)
@@ -52,8 +59,9 @@ void namn()
         }
     }
     else
-    {
-        Console.WriteLine("Invalid number entered.");
-    }
+    stopwatch.Stop();
+
+    Console.WriteLine($"Tog {stopwatch.Elapsed.TotalSeconds} sekunder");
+
 }
 return;
