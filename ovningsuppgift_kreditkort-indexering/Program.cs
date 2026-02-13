@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using ovningsuppgift_kreditkort_indexering;
+
 Console.WriteLine("Hello, World!");
-
-
 
 Console.WriteLine("What do you want to do?");
 Console.WriteLine("1. Generate credit mock data");
@@ -16,6 +16,7 @@ switch (choice)
 {
     case "1":
         Console.WriteLine("Generating mock data...");
+        MockData();
         break;
     case "2":
         Console.WriteLine("Listing people...");
@@ -29,5 +30,13 @@ switch (choice)
     default:
         Console.WriteLine("Invalid choice.");
         break;
+}
 
+void MockData()
+{
+    Db db = new Db();
+
+    db.firstName.ForEach(name => Console.WriteLine($"First Name: {name}"));
+    db.lastName.ForEach(name => Console.WriteLine($"Last Name: {name}"));
+    Console.WriteLine("Mock data generated.");
 }
