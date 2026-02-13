@@ -19,7 +19,7 @@ public class Db
                 CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
-            CREATE TABLE OF NOT EXISTS CreditCards(
+            CREATE TABLE IF NOT EXISTS CreditCards(
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             UserId INTEGER NOT NULL,
             CardNumber TEXT NOT NULL,
