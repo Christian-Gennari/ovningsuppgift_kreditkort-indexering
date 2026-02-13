@@ -1,7 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
-using ovningsuppgift_kreditkort_indexering;
+﻿using ovningsuppgift_kreditkort_indexering;
 
-Console.WriteLine("Hello, World!");
+
+
 
 Console.WriteLine("What do you want to do?");
 Console.WriteLine("1. Generate credit mock data");
@@ -56,3 +56,26 @@ void namn()
         Console.WriteLine("Invalid number entered.");
     }
 }
+return;
+
+   void namn()
+{
+    Db db = new Db();
+    Console.WriteLine("Hur många namn vill du generera? ");
+    string inputStr = Console.ReadLine();
+    int input;
+    if (int.TryParse(inputStr, out input))
+    {
+        for (int i = 0; i < input; i++)
+        {
+            Console.WriteLine($"Generating name {i + 1} {db.firstName} ");
+            Console.ReadLine();
+            
+        } 
+        
+    }
+    else
+    {
+        Console.WriteLine("Invalid number entered.");
+    }
+  }
