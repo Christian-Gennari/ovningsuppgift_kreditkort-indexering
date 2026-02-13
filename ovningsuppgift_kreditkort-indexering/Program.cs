@@ -1,8 +1,11 @@
-﻿using ovningsuppgift_kreditkort_indexering;
+﻿using System.Diagnostics;
+using ovningsuppgift_kreditkort_indexering;
 
 // Create and initialize the database
 Db db = new();
 db.Initialize();
+
+Stopwatch stopwatch = new Stopwatch();
 
 Console.WriteLine("What do you want to do?");
 Console.WriteLine("1. Generate credit mock data");
@@ -35,25 +38,20 @@ switch (choice)
 
 void namn()
 {
-    Random random = new Random();
-
     Console.WriteLine("Hur många namn vill du generera? ");
-    string inputStr = Console.ReadLine() ?? "100000";
-    int input;
-    if (int.TryParse(inputStr, out input))
+    if (int.TryParse(Console.ReadLine() ?? "100000", out int input))
     {
-        for (int i = 0; i < input; i++)
-        {
-            string slumpFornamn = db.firstName[random.Next(db.firstName.Count)];
-            string slumpEfternamn = db.lastName[random.Next(db.lastName.Count)];
+        stopwatch.Start();
 
-            Console.WriteLine($"Generating name {i + 1}. {slumpFornamn} {slumpEfternamn}");
-            db.InsertUser($"{slumpFornamn} {slumpEfternamn}");
-        }
-    }
-    else
-    {
-        Console.WriteLine("Invalid number entered.");
+        // Ge databasen ansvaret att generera och spara namnen
+        db.GenerateAndInsertUsers(input);
+
+        stopwatch.Stop();
+        Console.WriteLine(
+            $"Processed {input} names in {stopwatch.Elapsed.TotalSeconds:F2} seconds."
+        );
     }
 }
+
+
 return;

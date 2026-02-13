@@ -1,17 +1,15 @@
-using System;
-using System.Data.Common;
 using Microsoft.Data.Sqlite;
 
 namespace ovningsuppgift_kreditkort_indexering;
 
 public class Db
 {
-    private readonly SqliteConnection connection = new("Data Source=database.sqlite");
+    private readonly string connectionString = "Data Source=database.sqlite";
 
     public void Initialize()
     {
+        using var connection = new SqliteConnection(connectionString);
         connection.Open();
-
         var command = connection.CreateCommand();
         command.CommandText =
             @"
@@ -19,22 +17,77 @@ public class Db
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 Name TEXT NOT NULL,
                 CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        ";
+            );";
         command.ExecuteNonQuery();
     }
 
-    public void InsertUser(string name)
+    public void InsertUsersBatch(List<string> fullNames)
     {
+        using var connection = new SqliteConnection(connectionString);
         connection.Open();
 
-        var command = connection.CreateCommand();
-        command.CommandText =
-            @"
-            INSERT INTO Users (Name) VALUES ($name);
-        ";
-        command.Parameters.AddWithValue("$name", name);
-        command.ExecuteNonQuery();
+        // PRAGMAs
+        using (var pragmaCmd = connection.CreateCommand())
+        {
+            pragmaCmd.CommandText =
+                "PRAGMA synchronous = OFF; PRAGMA journal_mode = WAL; PRAGMA cache_size = 10000;";
+            pragmaCmd.ExecuteNonQuery();
+        }
+
+        using var transaction = connection.BeginTransaction();
+        using var command = connection.CreateCommand();
+
+        command.Transaction = transaction; // Länka kommandot till transaktionen
+        command.CommandText = "INSERT INTO Users (Name) VALUES ($name)";
+
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "$name";
+        command.Parameters.Add(parameter);
+
+        // LOOPEN för att exekvera alla inserts inom en enda transaktion
+        foreach (var name in fullNames)
+        {
+            parameter.Value = name;
+            command.ExecuteNonQuery();
+        }
+
+        // En enda commit
+        transaction.Commit();
+    }
+
+    public void GenerateAndInsertUsers(int count)
+    {
+        // Få alla namn i förväg, så att vi inte gör onödiga Random.Next-anrop i loopen
+        // Detta kanske bättrar?
+        string[] randomFirstNames = Random.Shared.GetItems(firstName.ToArray(), count);
+        string[] randomLastNames = Random.Shared.GetItems(lastName.ToArray(), count);
+
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
+
+        using (var pragmaCmd = connection.CreateCommand())
+        {
+            pragmaCmd.CommandText = "PRAGMA synchronous = OFF; PRAGMA journal_mode = WAL;";
+            pragmaCmd.ExecuteNonQuery();
+        }
+
+        using var transaction = connection.BeginTransaction();
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "INSERT INTO Users (Name) VALUES ($name)";
+
+        var parameter = command.CreateParameter();
+        parameter.ParameterName = "$name";
+        command.Parameters.Add(parameter);
+
+        // LOOPEN för att exekvera alla inserts inom en enda transaktion
+        for (int i = 0; i < count; i++)
+        {
+            parameter.Value = $"{randomFirstNames[i]} {randomLastNames[i]}";
+            command.ExecuteNonQuery();
+        }
+
+        transaction.Commit();
     }
 
     public List<string> firstName =
