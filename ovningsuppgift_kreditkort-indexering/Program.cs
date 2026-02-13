@@ -57,25 +57,3 @@ void namn()
     }
 }
 return;
-
-   void namn()
-{
-    Db db = new Db();
-    Console.WriteLine("Hur många namn vill du generera? ");
-    string inputStr = Console.ReadLine();
-    int input;
-    if (int.TryParse(inputStr, out input))
-    {
-        for (int i = 0; i < input; i++)
-        {
-            Console.WriteLine($"Generating name {i + 1} {db.firstName} ");
-            Console.ReadLine();
-            
-        } 
-        
-    }
-    else
-    {
-        Console.WriteLine("Invalid number entered.");
-    }
-  }
