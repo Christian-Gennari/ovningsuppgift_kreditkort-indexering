@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics;
 using ovningsuppgift_kreditkort_indexering;
 
 // Create and initialize the database

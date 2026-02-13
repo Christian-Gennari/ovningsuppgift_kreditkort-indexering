@@ -17,7 +17,15 @@ public class Db
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 Name TEXT NOT NULL,
                 CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-            );";
+            );
+
+            CREATE TABLE OF NOT EXISTS CreditCards(
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            UserId INTEGER NOT NULL,
+            CardNumber TEXT NOT NULL,
+            CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (UserId) REFERENCES Users(Id)
+            ); ";
         command.ExecuteNonQuery();
     }
 
